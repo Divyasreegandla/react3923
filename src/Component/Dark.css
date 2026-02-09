@@ -1,0 +1,12 @@
+.darkButton{
+    background-color: red;
+    color: antiquewhite;
+    padding: 30px;
+    border-radius: 20px;
+}
+
+.darkbox{
+    width: 500px;
+    height: 500px;
+    border: 5px solid black;
+}
