@@ -26,6 +26,7 @@ import './index.css'
 import WebDevelopment from './Router/WebDevelopment'
 import AppDevelopment from './Router/AppDevelopment'
 import BlogDetails from './Component/BlogDetails'
+import FinalTask from './Task/FinalTask'
 
 
 export const Pass = createContext();
@@ -42,24 +43,25 @@ export default function App() {
 
   return (
   <div>
-    {
+    <FinalTask/>
+    {/* {
       display && (<nav>
 
       </nav>)
-    }
+    } */}
   
-    <BrowserRouter>
+    {/* <BrowserRouter>
     {/* <div style={{textAlign:"center",display:"flex",justifyContent:"center",gap:"20px"}}> */}
-      <div className="header">
+      {/* <div className="header">
       <Link to="/">Home</Link>
       <Link to="/About">About</Link>
       <Link to="/Service" >Service</Link>
       <Link to="/Contact" >Contact</Link>
-      </div>
+      </div> */}
     {/* </div> */}
-    <Routes>
+    {/* <Routes> */}
       {/* dont create any divisions here */}
-      <Route path="/" element={<Home />}/>
+      {/* <Route path="/" element={<Home />}/>
        <Route path="/About" element={<About />}/>
         <Route path="/Service" element={<Service />}>
         <Route path="WebDevelopment" element={<WebDevelopment/>}/>
@@ -68,9 +70,9 @@ export default function App() {
         
          <Route path="/Contact" element={<Contact />}/>
          <Route path="/Blogs/:id" element={<BlogDetails/>}/>
-      </Routes>
+      </Routes> */}
    
-      </BrowserRouter>
+      {/* </BrowserRouter> */} 
 
       {/* <UseIdHook/>
     <UseReducerForm/>
