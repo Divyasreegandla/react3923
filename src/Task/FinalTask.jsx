@@ -643,7 +643,8 @@ const handleOrderSuccess=()=>{
             DIVYA
         </div>
         <p style={{opacity:0.5, fontSize:"14px"}}>@ 2026 DIVYA FINE DINING | ALL RIGHTS RESERVED </p>
-      </footer>
+    </footer>
     </div>
+
   )
 }
