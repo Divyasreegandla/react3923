@@ -722,9 +722,9 @@ const handleAdminClick = () => {
             gap:isMobile?"15px":"40px",
             fontSize:isMobile?"11px":"13px",
             alignItems:"center"
-        }}>{['Home','Menu','Location','Contact','Track Order','Admin'].map(page=>(
+        }}>{['Home','Menu','Location','Contact','Track Order'].map(page=>(
             <span key={page}
-            onClick={()=>page==='Admin'? handleAdminClick():setCurrentPage(page)}
+            onClick={()=>setCurrentPage(page)}
             style={{
                 cursor:"pointer",
                 color:currentPage===page?theme.gold:"white",
@@ -736,6 +736,11 @@ const handleAdminClick = () => {
                 {page.toUpperCase()} 
             </span>
         ))}
+        {adminPasswordInput === "divya123" && (
+        <span onClick={() => setCurrentPage('Admin')} style={{ color: theme.gold, cursor: "pointer" }}>
+            ADMIN
+        </span>
+    )}
 
         <div onClick={()=>setCurrentPage('Cart')}
             style={{
@@ -903,6 +908,12 @@ const handleAdminClick = () => {
             DIVYA
         </div>
         <p style={{opacity:0.5, fontSize:"14px"}}>@ 2026 DIVYA FINE DINING | ALL RIGHTS RESERVED </p>
+        <p 
+        onClick={() => setCurrentPage('Admin')} 
+        style={{ opacity: 0.2, fontSize: "10px", marginTop: "20px", cursor: "pointer" }}
+    >
+        Admin Login
+    </p>
     </footer>
     </div>
 
