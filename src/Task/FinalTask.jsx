@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 
-const Menu=({theme,commonStyles,menuData,addToCart})=>(
-        <div style={{padding:"60px 5%",backgroundColor:theme.softWhite}}>
+const Menu=({theme,commonStyles,menuData,addToCart,isMobile})=>(
+        <div style={{padding:isMobile?"40px 5%":"60px 5%",backgroundColor:theme.softWhite}}>
             <h2 style={commonStyles.sectionTitle}>Divya Foods</h2>
             <div style={{width:"60px",height:"2px",background:theme.gold,margin:"10px auto 40px"}}></div>
             {Object.keys(menuData).map((category)=>(
@@ -17,8 +17,8 @@ const Menu=({theme,commonStyles,menuData,addToCart})=>(
                     }}>{category}</h3>
                     <div style={{
                         display:"grid",
-                        gridTemplateColumns:"repeat(auto-fit,minmax(280px,1fr))",
-                        gap:"30px"
+                        gridTemplateColumns:isMobile?"1fr":"repeat(auto-fit,minmax(280px,1fr))",
+                        gap:isMobile?"20px":"30px"
                     }}>{menuData[category].map((item,i)=>(
                         <div key={i}
                         style={{
@@ -466,7 +466,7 @@ const TrackOrder = ({ theme, commonStyles }) => {
         </div>
     );
 };
-const AdminOrders = ({ theme, commonStyles }) => {
+const AdminOrders = ({ theme, commonStyles,isMobile }) => {
     // Get all orders from the "file"
     const [allOrders, setAllOrders] = useState(
         JSON.parse(localStorage.getItem('divya_orders') || '[]')
@@ -479,9 +479,12 @@ const AdminOrders = ({ theme, commonStyles }) => {
     };
 
     return (
-        <div style={{ padding: "30px 5%", minHeight: "80vh" }}>
+        <div style={{ padding: "30px 5%", minHeight: "80vh",width: "100%", overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
+
             <h2 style={commonStyles.sectionTitle}>Customer Order List</h2>
-            <table style={{ width: "100%", borderCollapse: "collapse", marginTop: "30px", backgroundColor: "white" }}>
+            <table style={{ width: "100%",
+                minWidth:isMobile?"600px":"auto",
+                 borderCollapse: "collapse", marginTop: "30px", backgroundColor: "white" }}>
                 <thead>
                     <tr style={{ backgroundColor: theme.midnight, color: "white" }}>
                         <th style={{ padding: "15px", textAlign: "left" }}>ID</th>
@@ -518,6 +521,14 @@ const AdminOrders = ({ theme, commonStyles }) => {
 };
 
 export default function FinalTask() {
+     const [width, setWidth] = React.useState(window.innerWidth);
+const isMobile = width < 768;
+
+React.useEffect(() => {
+    const handleResize = () => setWidth(window.innerWidth);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+}, []);
 
     const [currentPage,setCurrentPage]=useState('Home');
     const [reserve,setReserve]=useState(false);
@@ -528,6 +539,10 @@ export default function FinalTask() {
      const [isOrdered,setIsOrdered]=useState(false);
      const [adminPasswordInput, setAdminPasswordInput] = useState("");
      const [isPasswordWrong, setIsPasswordWrong] = useState(false);
+     const [showPassword, setShowPassword] = useState(false);
+     
+
+    
 
      const totalPrice = cart.reduce((acc, item) => {
         const priceNum = parseInt(item.price.replace(/[^\d]/g, "")) || 0;
@@ -680,14 +695,17 @@ const handleAdminClick = () => {
 
       <nav style={{
         display:"flex",
+        flexDirection:isMobile?"column":"row",
+        alignItems:"center",
         justifyContent:"space-between",
-        padding:"20px 8%",
+        padding:isMobile?"15px 5%":"20px 8%",
         backgroundColor:"rgba(26,26,26,.98)",
         color:"white",
         position:"sticky",
         top:0,
         zIndex:100,
-        backdropFilter:'blur(10px)'
+        backdropFilter:'blur(10px)',
+        gap:isMobile?"15px":"0px"
       }}>
         <div style={{
             fontSize:"28px",
@@ -700,7 +718,9 @@ const handleAdminClick = () => {
         </div>
         <div style={{
             display:"flex",
-            gap:"40px",
+            flexWrap:"wrap",
+            gap:isMobile?"15px":"40px",
+            fontSize:isMobile?"11px":"13px",
             alignItems:"center"
         }}>{['Home','Menu','Location','Contact','Track Order','Admin'].map(page=>(
             <span key={page}
@@ -752,7 +772,8 @@ const handleAdminClick = () => {
       {currentPage==='Menu' && <Menu theme={theme}
       commonStyles={commonStyles}
       menuData={menuData}
-      addToCart={addToCart}/>}
+      addToCart={addToCart}
+      isMobile={isMobile}/>}
       {currentPage==='Location' && <Location theme={theme}
       commonStyles={commonStyles}
       
@@ -805,53 +826,74 @@ const handleAdminClick = () => {
 {currentPage === 'Admin' && (
     <div style={{ padding: "100px 10%", textAlign: "center", minHeight: "60vh" }}>
         {adminPasswordInput !== "divya123" ? (
-            <div>
+            <div style={{ maxWidth: "300px", margin: "0 auto" }}>
                 <h2 style={commonStyles.sectionTitle}>Admin Access</h2>
-                <input 
-                    type="password" 
-                    placeholder="Enter Password" 
-                    style={{
-                        ...formInputStyle, 
-                        width: '200px', 
-                        marginBottom: '10px',
-                        border: isPasswordWrong ? "2px solid red" : `1px solid ${theme.gold}`
-                    }}
-                    onChange={(e) => {
-                        const val = e.target.value;
-                        // Reset error message while typing
-                        setIsPasswordWrong(false); 
-                        
-                        if(val === "divya123") {
-                            setAdminPasswordInput("divya123");
-                        } else if (val.length >= 8) { 
-                            // If they typed 8 or more chars and it's not correct
-                            setIsPasswordWrong(true);
-                        }
-                    }}
-                />
                 
-                {/* The Error Message */}
-                {isPasswordWrong && (
-                    <p style={{ color: "red", fontSize: "14px", marginBottom: "20px" }}>
-                         Wrong Password ❌
-                    </p>
-                )}
+                <div style={{ position: "relative", marginBottom: "10px" }}>
+                    <input 
+                        type={showPassword ? "text" : "password"} 
+                        placeholder="Enter Password" 
+                        style={{
+                            ...formInputStyle, 
+                            width: '100%', 
+                            paddingRight: '0px', // Space for the eye icon
+                            border: isPasswordWrong ? "2px solid #ff4d4d" : `1px solid ${theme.gold}`,
+                            outline: 'none'
+                        }}
+                        onChange={(e) => {
+                            const val = e.target.value;
+                            setIsPasswordWrong(false); 
+                            if(val.trim() === "divya123") {
+                                setAdminPasswordInput("divya123");
+                            } else if (val.length >= 8) {
+                                setIsPasswordWrong(true);
+                            }
+                        }}
+                    />
+                    {/* The Toggle Eye Button */}
+                    <span 
+                        onClick={() => setShowPassword(!showPassword)}
+                        style={{
+                            position: "absolute",
+                            right: "10px",
+                            top: "50%",
+                            transform: "translateY(-50%)",
+                            cursor: "pointer",
+                            fontSize: "18px",
+                            opacity: 0.7
+                        }}
+                    >
+                        {showPassword ? "👁️‍🗨️" : "👁"}
+                    </span>
+                </div>
+                
+                {/* Error Message */}
+                <div style={{ minHeight: "24px" }}>
+                    {isPasswordWrong && (
+                        <p style={{ color: "#ff4d4d", fontSize: "15px", margin: "0 0 10px 0" }}>
+                            Wrong Password ❌ 
+                        </p>
+                    )}
+                </div>
 
-                <p style={{ opacity: 0.7 }}>Please enter the admin password to view orders.</p>
+                <p style={{ opacity: 0.6, fontSize: "14px" }}>Please enter the admin key to view orders.</p>
+                
                 <button 
-                    style={{ ...commonStyles.button, marginTop: "20px" }} 
+                    style={{ ...commonStyles.button, marginTop: "20px", width: "100%" }} 
                     onClick={() => {
                         setIsPasswordWrong(false);
                         setCurrentPage('Home');
                     }}
-                >Back to Home</button>
+                >
+                    Back to Home
+                </button>
             </div>
         ) : (
-            <AdminOrders theme={theme} commonStyles={commonStyles} />
+            <AdminOrders theme={theme} commonStyles={commonStyles}
+            isMobile={isMobile} />
         )}
     </div>
 )}
-
 
 
       </main>
