@@ -360,7 +360,7 @@ const CheckOutForm=({theme,commonStyles,setPage,totalPrice,OrderSuccess})=>{
     );
 };
 
-const OrderSuccess = ({ theme, commonStyles, setCurrentPage, setIsOrdered }) => (
+const OrderSuccess = ({ theme, commonStyles, setCurrentPage, setIsOrdered, trackingId }) => (
     <div style={{
         padding: "100px 10%",
         textAlign: "center",
@@ -370,24 +370,40 @@ const OrderSuccess = ({ theme, commonStyles, setCurrentPage, setIsOrdered }) => 
         alignItems: "center",
         justifyContent: "center"
     }}>
+        <div style={{ fontSize: "80px", color: theme.success, marginBottom: "20px" }}>✅</div>
+        <h2 style={{color:"#1e6b22"}}>Order Placed Successfully!</h2>
+        
+        {/* NEW: Tracking ID Display Box */}
         <div style={{
-            fontSize: "80px",
-            color: theme.success,
-            marginBottom: "20px"
-        }}>✅</div>
-            <h2 style={{color:"#1e6b22"}}>Order Placed Successfully!</h2>
+            background: "#fff",
+            padding: "20px",
+            borderRadius: "12px",
+            boxShadow: "0 4px 15px rgba(0,0,0,0.1)",
+            margin: "20px 0",
+            border: `1px solid ${theme.gold}`
+        }}>
+            <p style={{ margin: "0 0 10px", fontSize: "14px", color: "#666" }}>YOUR TRACKING ID</p>
+            <h3 style={{ margin: 0, fontSize: "24px", color: theme.midnight, letterSpacing: "2px" }}>{trackingId}</h3>
+        </div>
+
         <p style={{ fontSize: "18px", color: "#382c2c", marginBottom: "30px" }}>
-            Your delicious food is being prepared and will be delivered soon.
+            Please save this ID to track your order status.
         </p>
-        <button 
-            style={{ ...commonStyles.button, padding: "15px 40px" }}
-            onClick={() => {
-                setIsOrdered(false);
-                setCurrentPage('Home');
-            }}
-        >
-            Back to Home
-        </button>
+        
+        <div style={{display: "flex", gap: "15px"}}>
+            <button 
+                style={{ ...commonStyles.button, padding: "15px 40px" }}
+                onClick={() => {
+                    setIsOrdered(false);
+                    setCurrentPage('Home');
+                }}
+            >Back to Home</button>
+            
+            <button 
+                style={{ ...commonStyles.button, backgroundColor: theme.midnight, padding: "15px 40px" }}
+                onClick={() => setCurrentPage('Track Order')}
+            >Track Order</button>
+        </div>
     </div>
 );
 
@@ -398,6 +414,100 @@ const formInputStyle={
     width:"100%",
     outline:"none",
     fontSize:"14px"
+};
+
+const TrackOrder = ({ theme, commonStyles }) => {
+    const [searchId, setSearchId] = useState("");
+    const [foundOrder, setFoundOrder] = useState(null);
+
+    const handleTrack = () => {
+        const orders = JSON.parse(localStorage.getItem('divya_orders') || '[]');
+        const order = orders.find(o => o.id === searchId.toUpperCase());
+        setFoundOrder(order || "not_found");
+    };
+
+    return (
+        <div style={{ padding: "80px 10%", textAlign: "center", minHeight: "60vh" }}>
+            <h2 style={commonStyles.sectionTitle}>Track Your Order</h2>
+            <div style={{ margin: "30px 0" }}>
+                <input 
+                    style={{ ...formInputStyle, width: "300px", marginRight: "10px" }}
+                    placeholder="Enter Tracking ID (e.g., DIV...)"
+                    value={searchId}
+                    onChange={(e) => setSearchId(e.target.value)}
+                />
+                <button style={commonStyles.button} onClick={handleTrack}>Track</button>
+            </div>
+
+            {foundOrder === "not_found" && <p style={{ color: "red" }}>Order ID not found.</p>}
+            
+            {foundOrder && foundOrder !== "not_found" && (
+                <div style={{ background: "white", padding: "30px", borderRadius: "10px", boxShadow: "0 4px 15px rgba(0,0,0,0.1)", textAlign: "left", maxWidth: "500px", margin: "0 auto" }}>
+                    <h3 style={{ color: theme.gold }}>Order Status: {foundOrder.status}</h3>
+                    <p><strong>Tracking ID:</strong> {foundOrder.id}</p>
+                    <p><strong>Order Date:</strong> {foundOrder.date}</p>
+                    <hr />
+                    {foundOrder.items.map((item, i) => (
+                        <div key={i} style={{ display: "flex", justifyContent: "space-between" }}>
+                            <span>{item.name} x {item.quantity}</span>
+                            <span>{item.price}</span>
+                        </div>
+                    ))}
+                    <h4 style={{ textAlign: "right", marginTop: "15px" }}>Total: ₹{foundOrder.total}/-</h4>
+                </div>
+            )}
+        </div>
+    );
+};
+const AdminOrders = ({ theme, commonStyles }) => {
+    // Get all orders from the "file"
+    const [allOrders, setAllOrders] = useState(
+        JSON.parse(localStorage.getItem('divya_orders') || '[]')
+    );
+
+    const deleteOrder = (id) => {
+        const updated = allOrders.filter(order => order.id !== id);
+        setAllOrders(updated);
+        localStorage.setItem('divya_orders', JSON.stringify(updated));
+    };
+
+    return (
+        <div style={{ padding: "80px 5%", minHeight: "80vh" }}>
+            <h2 style={commonStyles.sectionTitle}>Master Order List</h2>
+            <table style={{ width: "100%", borderCollapse: "collapse", marginTop: "30px", backgroundColor: "white" }}>
+                <thead>
+                    <tr style={{ backgroundColor: theme.midnight, color: "white" }}>
+                        <th style={{ padding: "15px", textAlign: "left" }}>ID</th>
+                        <th style={{ padding: "15px", textAlign: "left" }}>Customer</th>
+                        <th style={{ padding: "15px", textAlign: "left" }}>Items</th>
+                        <th style={{ padding: "15px", textAlign: "left" }}>Total</th>
+                        <th style={{ padding: "15px", textAlign: "left" }}>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {allOrders.map((order) => (
+                        <tr key={order.id} style={{ borderBottom: "1px solid #ddd" }}>
+                            <td style={{ padding: "15px", fontWeight: "bold" }}>{order.id}</td>
+                            <td style={{ padding: "15px" }}>{order.customer.name}</td>
+                            <td style={{ padding: "15px" }}>
+                                {order.items.map(item => `${item.name} (x${item.quantity})`).join(", ")}
+                            </td>
+                            <td style={{ padding: "15px" }}>₹{order.total}/-</td>
+                            <td style={{ padding: "15px" }}>
+                                <button 
+                                    onClick={() => deleteOrder(order.id)}
+                                    style={{ background: "#e74c3c", color: "white", border: "none", padding: "5px 10px", borderRadius: "4px", cursor: "pointer" }}
+                                >
+                                    Delete
+                                </button>
+                            </td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+            {allOrders.length === 0 && <p style={{ textAlign: "center", marginTop: "20px" }}>No orders found.</p>}
+        </div>
+    );
 };
 
 export default function FinalTask() {
@@ -414,6 +524,30 @@ export default function FinalTask() {
         const priceNum = parseInt(item.price.replace(/[^\d]/g, "")) || 0;
         return acc + (priceNum * (item.quantity || 1));
     }, 0);
+
+    // Helper to generate a unique Tracking ID
+const generateTrackingId = () => "DIV" + Math.random().toString(36).substr(2, 9).toUpperCase();
+
+// CRUD: Create and Save Order
+const saveOrder = (customerDetails, cartItems, total) => {
+    const trackingId = generateTrackingId();
+    const newOrder = {
+        id: trackingId,
+        customer: customerDetails,
+        items: cartItems,
+        total: total,
+        status: "Preparing", // Default status
+        date: new Date().toLocaleString()
+    };
+
+    // Get existing orders or empty array
+    const existingOrders = JSON.parse(localStorage.getItem('divya_orders') || '[]');
+    existingOrders.push(newOrder);
+    
+    // Save back to Local Storage
+    localStorage.setItem('divya_orders', JSON.stringify(existingOrders));
+    return trackingId;
+};
 
     const theme={
         midnight:"#1a1a1a",
@@ -499,11 +633,22 @@ export default function FinalTask() {
             ).filter(item=>item.quantity>0)
         );
 };
-const handleOrderSuccess=()=>{
+const [lastTrackingId, setLastTrackingId] = useState("");
+const handleOrderSuccess=(customerDetails)=>{
+    const trackId = saveOrder(customerDetails, cart, totalPrice);
+    setLastTrackingId(trackId)
     setCart([]);
     setIsOrdered(true);
     setCurrentPage("OrderSuccess");
 }
+const handleAdminClick = () => {
+    const password = prompt("Enter Admin Password:");
+    if (password === "divya123") {
+        setCurrentPage('Admin');
+    } else {
+        alert("Access Denied");
+    }
+};
     
   return (
     <div style={{fontFamily:'"Inter",sans-serif',
@@ -551,7 +696,7 @@ const handleOrderSuccess=()=>{
             display:"flex",
             gap:"40px",
             alignItems:"center"
-        }}>{['Home','Menu','Location','Contact'].map(page=>(
+        }}>{['Home','Menu','Location','Contact','Track Order','Admin'].map(page=>(
             <span key={page}
             onClick={()=>setCurrentPage(page)}
             style={{
@@ -604,7 +749,9 @@ const handleOrderSuccess=()=>{
       addToCart={addToCart}/>}
       {currentPage==='Location' && <Location theme={theme}
       commonStyles={commonStyles}
+      
       />}
+      
       {currentPage==='Contact' && (
         <Contact
         theme={theme}
@@ -630,12 +777,29 @@ const handleOrderSuccess=()=>{
       OrderSuccess={handleOrderSuccess}/>
       )}
 
-      {currentPage==='OrderSuccess' && (
-        <OrderSuccess theme={theme}
+      {/* Change the OrderSuccess call to this: */}
+{currentPage==='OrderSuccess' && (
+    <OrderSuccess 
+        theme={theme}
         commonStyles={commonStyles}
         setCurrentPage={setCurrentPage}
-        setIsOrdered={setIsOrdered}/>
-      )}
+        setIsOrdered={setIsOrdered}
+        trackingId={lastTrackingId} 
+    />
+)}
+
+{/* Add the TrackOrder page call: */}
+{currentPage==='Track Order' && (
+    <TrackOrder 
+        theme={theme} 
+        commonStyles={commonStyles} 
+    />
+)}
+
+{currentPage === 'Admin' && <AdminOrders theme={theme} commonStyles={commonStyles} />}
+
+
+
       </main>
 
       <footer style={{backgroundColor:theme.midnight,color:"white",padding:"60px 5%", textAlign:"center"}}>
