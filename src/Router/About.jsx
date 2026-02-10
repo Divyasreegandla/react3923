@@ -1,6 +1,6 @@
 import React from 'react'
 import ListData from '../Component/ListData'
-import useCounter from '../Component/UseCounter';
+// import useCounter from '../Component/UseCounter';
 import { useActionData } from 'react-router-dom'
 import Cred from '../Component/Cred';
 
