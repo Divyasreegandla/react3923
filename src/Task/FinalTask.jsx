@@ -308,8 +308,15 @@ const Menu=({theme,commonStyles,menuData,addToCart})=>(
 
 const CheckOutForm=({theme,commonStyles,setPage,totalPrice,OrderSuccess})=>{
    const handleFormSubmit=(e)=>{
-    e.preventDefault();
-    OrderSuccess(); 
+      e.preventDefault();
+    const customerDetails = {
+        name: e.target[0].value + " " + e.target[1].value, // First + Last Name
+        email: e.target[2].value,
+        phone: e.target[3].value,
+        address: `${e.target[4].value}, ${e.target[6].value}` // House + City
+    };
+  
+    OrderSuccess(customerDetails); 
 };
     return(
         <div style={{
@@ -472,8 +479,8 @@ const AdminOrders = ({ theme, commonStyles }) => {
     };
 
     return (
-        <div style={{ padding: "80px 5%", minHeight: "80vh" }}>
-            <h2 style={commonStyles.sectionTitle}>Master Order List</h2>
+        <div style={{ padding: "30px 5%", minHeight: "80vh" }}>
+            <h2 style={commonStyles.sectionTitle}>Customer Order List</h2>
             <table style={{ width: "100%", borderCollapse: "collapse", marginTop: "30px", backgroundColor: "white" }}>
                 <thead>
                     <tr style={{ backgroundColor: theme.midnight, color: "white" }}>
@@ -488,7 +495,7 @@ const AdminOrders = ({ theme, commonStyles }) => {
                     {allOrders.map((order) => (
                         <tr key={order.id} style={{ borderBottom: "1px solid #ddd" }}>
                             <td style={{ padding: "15px", fontWeight: "bold" }}>{order.id}</td>
-                            <td style={{ padding: "15px" }}>{order.customer.name}</td>
+                            <td style={{ padding: "15px" }}>{order.customer?.name || "Guest"}</td>
                             <td style={{ padding: "15px" }}>
                                 {order.items.map(item => `${item.name} (x${item.quantity})`).join(", ")}
                             </td>
@@ -519,6 +526,8 @@ export default function FinalTask() {
     const [email,setEmail]=useState("");
      const [reserveName,setReserveName]=useState("");
      const [isOrdered,setIsOrdered]=useState(false);
+     const [adminPasswordInput, setAdminPasswordInput] = useState("");
+     const [isPasswordWrong, setIsPasswordWrong] = useState(false);
 
      const totalPrice = cart.reduce((acc, item) => {
         const priceNum = parseInt(item.price.replace(/[^\d]/g, "")) || 0;
@@ -634,6 +643,7 @@ const saveOrder = (customerDetails, cartItems, total) => {
         );
 };
 const [lastTrackingId, setLastTrackingId] = useState("");
+
 const handleOrderSuccess=(customerDetails)=>{
     const trackId = saveOrder(customerDetails, cart, totalPrice);
     setLastTrackingId(trackId)
@@ -642,12 +652,8 @@ const handleOrderSuccess=(customerDetails)=>{
     setCurrentPage("OrderSuccess");
 }
 const handleAdminClick = () => {
-    const password = prompt("Enter Admin Password:");
-    if (password === "divya123") {
         setCurrentPage('Admin');
-    } else {
-        alert("Access Denied");
-    }
+   
 };
     
   return (
@@ -698,7 +704,7 @@ const handleAdminClick = () => {
             alignItems:"center"
         }}>{['Home','Menu','Location','Contact','Track Order','Admin'].map(page=>(
             <span key={page}
-            onClick={()=>setCurrentPage(page)}
+            onClick={()=>page==='Admin'? handleAdminClick():setCurrentPage(page)}
             style={{
                 cursor:"pointer",
                 color:currentPage===page?theme.gold:"white",
@@ -796,7 +802,55 @@ const handleAdminClick = () => {
     />
 )}
 
-{currentPage === 'Admin' && <AdminOrders theme={theme} commonStyles={commonStyles} />}
+{currentPage === 'Admin' && (
+    <div style={{ padding: "100px 10%", textAlign: "center", minHeight: "60vh" }}>
+        {adminPasswordInput !== "divya123" ? (
+            <div>
+                <h2 style={commonStyles.sectionTitle}>Admin Access</h2>
+                <input 
+                    type="password" 
+                    placeholder="Enter Password" 
+                    style={{
+                        ...formInputStyle, 
+                        width: '200px', 
+                        marginBottom: '10px',
+                        border: isPasswordWrong ? "2px solid red" : `1px solid ${theme.gold}`
+                    }}
+                    onChange={(e) => {
+                        const val = e.target.value;
+                        // Reset error message while typing
+                        setIsPasswordWrong(false); 
+                        
+                        if(val === "divya123") {
+                            setAdminPasswordInput("divya123");
+                        } else if (val.length >= 8) { 
+                            // If they typed 8 or more chars and it's not correct
+                            setIsPasswordWrong(true);
+                        }
+                    }}
+                />
+                
+                {/* The Error Message */}
+                {isPasswordWrong && (
+                    <p style={{ color: "red", fontSize: "14px", marginBottom: "20px" }}>
+                         Wrong Password ❌
+                    </p>
+                )}
+
+                <p style={{ opacity: 0.7 }}>Please enter the admin password to view orders.</p>
+                <button 
+                    style={{ ...commonStyles.button, marginTop: "20px" }} 
+                    onClick={() => {
+                        setIsPasswordWrong(false);
+                        setCurrentPage('Home');
+                    }}
+                >Back to Home</button>
+            </div>
+        ) : (
+            <AdminOrders theme={theme} commonStyles={commonStyles} />
+        )}
+    </div>
+)}
 
 
 
